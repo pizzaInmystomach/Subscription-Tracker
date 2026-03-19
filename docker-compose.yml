@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    container_name: sub-tracker-db
+    environment:
+      - POSTGRES_USER=pigg
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=subtracker
+    ports:
+      - "5432:5432"
+
+  app:
+    build: .
+    container_name: sub-tracker-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      # 重要：在 Docker 網路中，主機名稱要改為服務名稱 "db" 而不是 localhost
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/subtracker
+      # 這裡填入你的 Mailtrap 帳密
+      - MAILTRAP_USERNAME=${MAILTRAP_USERNAME}
+      - MAILTRAP_PASSWORD=${MAILTRAP_PASSWORD}
+
+volumes:
+  postgres_data:
