@@ -92,6 +92,6 @@ docker-compose up --build -d
 ---
 
 ## 💡 Engineering Highlights
-* **Separation of Concerns:** Decoupled the notification engine from the core API to allow independent scaling.
-* **Resilient Scheduling:** Designed the scheduler to handle large datasets by leveraging optimized JPA queries.
-* **DevOps Best Practices:** Containerized both application and database to eliminate "it works on my machine" issues.
+* **Decoupled Design:** Used `@Async` to separate the notification engine from the main scheduling thread, preventing system bottlenecks during mass mailing.
+* **Docker Networking:** Leveraged Docker Compose service discovery (e.g., `jdbc:postgresql://db:5432/...`) to ensure reliable inter-container communication.
+* **Clean Code Practices:** Heavily utilized Lombok to reduce boilerplate and adhered to **RESTful** design principles for predictable API behavior.
