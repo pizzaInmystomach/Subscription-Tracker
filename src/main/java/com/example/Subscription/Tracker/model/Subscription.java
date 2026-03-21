@@ -20,9 +20,13 @@ public class Subscription {
     private Long id;
 
     private String name;           // 訂閱名稱 (如 Netflix)
+    private String email;          // 提醒信箱
     private Double price;          // 金額
     private String currency;       // 幣別
     private LocalDate nextBillingDate; // 下次扣款日
     private String period;         // 週期 (MONTHLY/YEARLY)
     private Integer noticeDays;    // 提前幾天提醒
+    private String status;         // ACTIVE/CANCELED/PAYMENT_FAILED/PENDING_DETAILS
+    private String lastStatusNote; // 上次狀態說明
+    private LocalDate lastStatusAt; // 上次狀態更新日期
 }

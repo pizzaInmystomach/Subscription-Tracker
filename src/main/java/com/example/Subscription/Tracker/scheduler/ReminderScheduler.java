@@ -30,11 +30,19 @@ public class ReminderScheduler {
         List<Subscription> allSubs = repository.findAll();
 
         for (Subscription sub : allSubs) {
+            if (sub.getNextBillingDate() == null || sub.getNoticeDays() == null) {
+                continue;
+            }
+            if ("CANCELED".equalsIgnoreCase(sub.getStatus())) {
+                continue;
+            }
             LocalDate reminderDate = sub.getNextBillingDate().minusDays(sub.getNoticeDays());
 
             if (reminderDate.equals(today)) {
-                // 假設這裡發送給固定信箱，之後可以擴充為 sub.getUser().getEmail()
-                emailService.sendCancelReminder("your-test@email.com", sub.getName(), sub.getNextBillingDate());
+                String targetEmail = (sub.getEmail() == null || sub.getEmail().isBlank())
+                    ? "your-test@email.com"
+                    : sub.getEmail();
+                emailService.sendCancelReminder(targetEmail, sub.getName(), sub.getNextBillingDate());
                 log.info("Successfully send reminding mail to [{}].", sub.getName());
             }
         }

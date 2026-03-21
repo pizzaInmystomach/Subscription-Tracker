@@ -23,4 +23,10 @@ public class SubscriptionController {
 
     @PostMapping
     public Subscription add(@RequestBody Subscription sub) { return service.create(sub); }
+
+    // Simple home endpoint to verify API is running
+    @GetMapping("/")
+    public String home() {
+        return "🚀 Subscription Tracker API is running! Check /api/subscriptions for data.";
+    }
 }

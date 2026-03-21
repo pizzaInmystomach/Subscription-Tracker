@@ -24,6 +24,12 @@ public class EmailService {
     @Value("${spring.mail.username:}")
     private String mailUsername;
 
+    @Value("${app.mail.from:no-reply@subtracker.com}")
+    private String mailFrom;
+
+    @Value("${app.base-url:http://localhost:8080}")
+    private String baseUrl;
+
     // Log mail configuration on startup for debugging purposes
     @PostConstruct
     public void logMailConfig() {
@@ -39,7 +45,7 @@ public class EmailService {
     public void sendCancelReminder(String to, String subName, LocalDate billingDate) {
         // In a real application, you would construct a proper email message here
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("no-reply@subtracker.com");
+        message.setFrom(mailFrom);
         message.setTo(to);
         message.setSubject("Subscription Reminder: " + subName);
         message.setText(String.format(
@@ -52,5 +58,19 @@ public class EmailService {
         // Simulate delay for sending email
         log.info("Sending mails (Thread: {})", Thread.currentThread().getName());
         try { Thread.sleep(2000); } catch (InterruptedException e) {} 
+    }
+
+    @Async
+    public void sendVerificationEmail(String to, String token) {
+        String verifyLink = baseUrl + "/verify.html?token=" + token;
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(mailFrom);
+        message.setTo(to);
+        message.setSubject("Verify your email");
+        message.setText(String.format(
+            "Please verify your email by clicking the link below:\n%s",
+            verifyLink
+        ));
+        mailSender.send(message);
     }
 }

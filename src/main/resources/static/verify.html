@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Email Verification</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="bg-grid"></div>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <main class="container">
+      <section class="glass section">
+        <div class="section-head">
+          <h2>Email Verification</h2>
+          <p id="status">Verifying, please wait...</p>
+        </div>
+        <a class="btn primary" href="/">Back to home</a>
+      </section>
+    </main>
+
+    <script>
+      const statusEl = document.getElementById("status");
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+
+      if (!token) {
+        statusEl.textContent = "Missing verification data. Please return to home.";
+      } else {
+        fetch(`/api/verify/confirm?token=${encodeURIComponent(token)}`)
+          .then((res) => {
+            if (!res.ok) throw new Error("Verification failed");
+            statusEl.textContent = "Verified! Your platforms are now tracked.";
+          })
+          .catch(() => {
+            statusEl.textContent = "Verification failed or link expired. Please resend.";
+          });
+      }
+    </script>
+  </body>
+</html>

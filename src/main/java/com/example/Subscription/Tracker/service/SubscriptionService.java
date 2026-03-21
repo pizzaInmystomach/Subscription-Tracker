@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 import com.example.Subscription.Tracker.model.Subscription;
 import com.example.Subscription.Tracker.repository.SubscriptionRepository;
 
@@ -14,5 +16,13 @@ public class SubscriptionService {
     private SubscriptionRepository repository;
 
     public List<Subscription> getAll() { return repository.findAll(); }
-    public Subscription create(Subscription sub) { return repository.save(sub); }
+    public Subscription create(Subscription sub) {
+        if (sub.getStatus() == null || sub.getStatus().isBlank()) {
+            sub.setStatus("ACTIVE");
+        }
+        if (sub.getLastStatusAt() == null) {
+            sub.setLastStatusAt(LocalDate.now());
+        }
+        return repository.save(sub);
+    }
 }

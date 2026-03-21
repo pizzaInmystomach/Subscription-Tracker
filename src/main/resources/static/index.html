@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Subscription Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="bg-grid"></div>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <header class="hero">
+      <div class="hero-content glass">
+        <div class="badge">Subscription Tracker</div>
+        <h1>One-page Subscription Console</h1>
+        <p>
+          Track subscriptions with a futuristic glass UI, verify your email,<br />
+          and see upcoming charges at a glance.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#verify">Quick start</a>
+          <a class="btn ghost" href="#list">View list</a>
+        </div>
+      </div>
+      <div class="hero-metric glass">
+        <div class="metric-title">Live status</div>
+        <div class="metric-value" id="totalCount">0</div>
+        <div class="metric-sub">subscriptions tracked</div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="verify" class="glass section">
+        <div class="section-head">
+          <h2>Quick Start</h2>
+          <p>Enter your email, pick popular platforms, and we will send a verification link.</p>
+          <p class="muted">Connect Gmail to enable the daily 9:00 AM scan for cancellations or failed renewals.</p>
+        </div>
+        <form id="verifyForm" class="grid">
+          <label class="field">
+            <span>Email</span>
+            <input type="email" name="email" placeholder="name@example.com" required />
+          </label>
+          <div class="field full">
+            <span>Popular platforms</span>
+            <div id="platformList" class="platform-list"></div>
+          </div>
+          <label class="field">
+            <span>Add a custom platform</span>
+            <div class="inline">
+              <input type="text" id="customPlatform" placeholder="e.g., Notion" />
+              <button class="btn ghost" type="button" id="addPlatformBtn">Add</button>
+            </div>
+          </label>
+          <div class="field actions">
+            <button class="btn primary" type="submit">Send verification</button>
+            <a class="btn ghost" href="/oauth2/authorization/google">Connect Gmail</a>
+          </div>
+        </form>
+        <div id="verifyMessage" class="form-message" role="status"></div>
+      </section>
+
+      <section id="form" class="glass section">
+        <div class="section-head">
+          <h2>Advanced Setup</h2>
+          <p>If you already know billing details, add a full reminder directly.</p>
+        </div>
+        <form id="subscriptionForm" class="grid">
+          <label class="field">
+            <span>Email</span>
+            <input type="email" name="email" placeholder="name@example.com" required />
+          </label>
+          <label class="field">
+            <span>Subscription name</span>
+            <input type="text" name="name" placeholder="Netflix / Spotify" required />
+          </label>
+          <label class="field">
+            <span>Price</span>
+            <input type="number" name="price" min="0" step="0.01" placeholder="299" required />
+          </label>
+          <label class="field">
+            <span>Currency</span>
+            <select name="currency" required>
+              <option value="TWD">TWD</option>
+              <option value="USD">USD</option>
+              <option value="JPY">JPY</option>
+              <option value="EUR">EUR</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Next billing date</span>
+            <input type="date" name="nextBillingDate" required />
+          </label>
+          <label class="field">
+            <span>Period</span>
+            <select name="period" required>
+              <option value="MONTHLY">Monthly</option>
+              <option value="YEARLY">Yearly</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Reminder days before</span>
+            <input type="number" name="noticeDays" min="0" max="60" placeholder="7" required />
+          </label>
+          <div class="field actions">
+            <button class="btn primary" type="submit">Create subscription</button>
+            <button class="btn ghost" type="reset">Clear</button>
+          </div>
+        </form>
+        <div id="formMessage" class="form-message" role="status"></div>
+      </section>
+
+      <section id="list" class="glass section">
+        <div class="section-head">
+          <h2>Tracked subscriptions</h2>
+          <p>Synced live from the backend database.</p>
+        </div>
+        <div id="subscriptions" class="card-grid"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Built with Spring Boot · Glass UI</span>
+    </footer>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
