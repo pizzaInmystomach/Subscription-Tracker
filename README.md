@@ -95,3 +95,44 @@ docker-compose up --build -d
 * **Decoupled Design:** Used `@Async` to separate the notification engine from the main scheduling thread, preventing system bottlenecks during mass mailing.
 * **Docker Networking:** Leveraged Docker Compose service discovery (e.g., `jdbc:postgresql://db:5432/...`) to ensure reliable inter-container communication.
 * **Clean Code Practices:** Heavily utilized Lombok to reduce boilerplate and adhered to **RESTful** design principles for predictable API behavior.
+
+---
+
+### System Architecture
+```mermaid
+graph TD
+    User((User/Client)) -- REST API --> Controller[Spring Boot Controller]
+    subgraph "Application Logic"
+        Controller --> Service[Subscription Service]
+        Service --> DB[(PostgreSQL)]
+        Scheduler[Spring Scheduler] -- Trigger Daily --> Service
+    end
+    subgraph "Async Notifications"
+        Service -- Async Call --> Email[Email Service]
+        Email -- SMTP --> Mailtrap[Mailtrap / SMTP Server]
+    end
+    Mailtrap --> User
+```
+
+### Workflow: Automatic Reminder
+```mermaid
+sequenceDiagram
+    autonumber
+    participant S as Scheduler (Daily 9:00 AM)
+    participant DB as PostgreSQL
+    participant L as Logic Engine
+    participant E as Email Service
+
+    S->>DB: Query all active subscriptions
+    DB-->>S: Return subscription list
+    loop For each subscription
+        S->>L: Calculate (BillingDate - NoticeDays)
+        alt is Today?
+            L->>E: Trigger Async Send
+            E-->>S: Return immediately (Non-blocking)
+            E->>E: Send Email via SMTP
+        else is Not Today
+            L->>S: Skip
+        end
+    end
+```
