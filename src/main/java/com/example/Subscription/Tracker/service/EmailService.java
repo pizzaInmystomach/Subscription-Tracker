@@ -24,6 +24,7 @@ public class EmailService {
     @Value("${spring.mail.username:}")
     private String mailUsername;
 
+    // Log mail configuration on startup for debugging purposes
     @PostConstruct
     public void logMailConfig() {
         if (mailUsername == null || mailUsername.isBlank()) {
@@ -33,8 +34,10 @@ public class EmailService {
         }
     }
 
+    // Simulate sending email asynchronously
     @Async
     public void sendCancelReminder(String to, String subName, LocalDate billingDate) {
+        // In a real application, you would construct a proper email message here
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("no-reply@subtracker.com");
         message.setTo(to);
@@ -46,6 +49,7 @@ public class EmailService {
 
         mailSender.send(message);
 
+        // Simulate delay for sending email
         log.info("Sending mails (Thread: {})", Thread.currentThread().getName());
         try { Thread.sleep(2000); } catch (InterruptedException e) {} 
     }
