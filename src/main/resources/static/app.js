@@ -1,18 +1,16 @@
 const form = document.querySelector("#subscriptionForm");
 const formMessage = document.querySelector("#formMessage");
-const verifyForm = document.querySelector("#verifyForm");
-const verifyMessage = document.querySelector("#verifyMessage");
 const authForm = document.querySelector("#authForm");
 const authMessage = document.querySelector("#authMessage");
-const memberStatus = document.querySelector("#memberStatus");
+const authStatusText = document.querySelector("#authStatusText");
+const authStatusTile = document.querySelector("#authStatusTile");
 const registerBtn = document.querySelector("#registerBtn");
 const loginBtn = document.querySelector("#loginBtn");
 const logoutBtn = document.querySelector("#logoutBtn");
-const platformListEl = document.querySelector("#platformList");
-const customPlatformInput = document.querySelector("#customPlatform");
-const addPlatformBtn = document.querySelector("#addPlatformBtn");
 const list = document.querySelector("#subscriptions");
 const totalCount = document.querySelector("#totalCount");
+const toolCount = document.querySelector("#toolCount");
+const avgMonthly = document.querySelector("#avgMonthly");
 
 const TOKEN_KEY = "subtracker_token";
 
@@ -35,34 +33,25 @@ const decodeJwt = (token) => {
   }
 };
 
-const updateMemberStatus = () => {
+const setAuthStatus = (text, isError = false) => {
+  authStatusText.textContent = text;
+  authStatusText.classList.toggle("status-error", isError);
+  authStatusTile.classList.toggle("status-failed", isError);
+};
+
+const updateAuthStatusFromToken = () => {
   const token = getToken();
   if (!token) {
-    memberStatus.textContent = "Not signed in";
+    setAuthStatus("NOT SIGNED IN");
     return;
   }
   const payload = decodeJwt(token);
-  if (!payload || !payload.sub) {
-    memberStatus.textContent = "Signed in";
-    return;
+  if (payload && payload.sub) {
+    setAuthStatus(`SIGNED IN AS ${payload.sub}`);
+  } else {
+    setAuthStatus("SIGNED IN");
   }
-  memberStatus.textContent = `Signed in as ${payload.sub}`;
 };
-
-const defaultPlatforms = [
-  "Netflix",
-  "Spotify",
-  "YouTube Premium",
-  "Apple Music",
-  "Disney+",
-  "HBO Max",
-  "Amazon Prime",
-  "Notion",
-  "ChatGPT Plus",
-  "Adobe Creative Cloud",
-];
-
-const platformState = defaultPlatforms.map((name) => ({ name, selected: false }));
 
 const formatDate = (value) => {
   if (!value) return "-";
@@ -70,10 +59,47 @@ const formatDate = (value) => {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString("en-US");
 };
 
+const monthlyCost = (price, period) => {
+  if (price == null || Number.isNaN(price)) return 0;
+  switch (period) {
+    case "MONTHLY":
+      return price;
+    case "QUARTERLY":
+      return price / 3;
+    case "BIANNUAL":
+      return price / 6;
+    case "YEARLY":
+      return price / 12;
+    default:
+      return price;
+  }
+};
+
+const flipUpdate = (el, value) => {
+  if (el.textContent === value) return;
+  el.classList.remove("flip");
+  void el.offsetWidth;
+  el.textContent = value;
+  el.classList.add("flip");
+};
+
+const updateStats = (items) => {
+  const count = items.length;
+  const totalMonthly = items.reduce(
+    (sum, item) => sum + monthlyCost(Number(item.price), item.period),
+    0
+  );
+  const avg = count === 0 ? 0 : totalMonthly / count;
+  flipUpdate(toolCount, String(count));
+  flipUpdate(avgMonthly, `$${avg.toFixed(2)}`);
+};
+
 const renderList = (items) => {
   totalCount.textContent = items.length.toString();
+  updateStats(items);
+
   if (!items.length) {
-    list.innerHTML = `<div class="card"><h3>No subscriptions yet</h3><p>Create your first entry to see it here.</p></div>`;
+    list.innerHTML = `<div class="card"><h3>NO SUBSCRIPTIONS</h3><p>ADD YOUR FIRST TOOL TO SEE IT HERE.</p></div>`;
     return;
   }
 
@@ -81,15 +107,11 @@ const renderList = (items) => {
     .map(
       (item) => `
       <div class="card">
-        <h3>${item.name || "Untitled"}</h3>
-        <p>Email: ${item.email || "-"}</p>
-        <p>Price: ${item.currency || ""} ${item.price ?? "-"}</p>
-        <p>Next billing: ${formatDate(item.nextBillingDate)}</p>
-        <p>Period: ${item.period || "-"}</p>
-        <p>Reminder: ${item.noticeDays ?? "-"} days before</p>
-        <p>Status: ${item.status || "-"}</p>
-        <p>Last update: ${item.lastStatusAt ? formatDate(item.lastStatusAt) : "-"}</p>
-        <p>Note: ${item.lastStatusNote || "-"}</p>
+        <h3>${(item.name || "UNTITLED").toUpperCase()}</h3>
+        <p>${item.currency || ""} ${item.price ?? "-"}</p>
+        <p>START: ${formatDate(item.nextBillingDate)}</p>
+        <p>PERIOD: ${item.period || "-"}</p>
+        <p>STATUS: ${item.status || "-"}</p>
       </div>
     `
     )
@@ -102,79 +124,21 @@ const fetchSubscriptions = async () => {
       headers: { ...authHeaders() },
     });
     if (res.status === 401) {
-      list.innerHTML = `<div class="card"><h3>Authentication required</h3><p>Please log in to view your subscriptions.</p></div>`;
+      list.innerHTML = `<div class="card"><h3>AUTH REQUIRED</h3><p>PLEASE LOG IN TO VIEW SUBSCRIPTIONS.</p></div>`;
+      updateStats([]);
       return;
     }
-    if (!res.ok) throw new Error("Unable to load subscriptions");
+    if (!res.ok) throw new Error("UNABLE TO LOAD SUBSCRIPTIONS");
     const data = await res.json();
     renderList(data);
   } catch (err) {
-    list.innerHTML = `<div class="card"><h3>Load failed</h3><p>${err.message}</p></div>`;
+    list.innerHTML = `<div class="card"><h3>LOAD FAILED</h3><p>${err.message}</p></div>`;
+    updateStats([]);
   }
 };
-
-const renderPlatforms = () => {
-  platformListEl.innerHTML = platformState
-    .map(
-      (p, idx) => `
-        <label class="chip">
-          <input type="checkbox" data-index="${idx}" ${p.selected ? "checked" : ""}/>
-          <span>${p.name}</span>
-        </label>
-      `
-    )
-    .join("");
-};
-
-platformListEl.addEventListener("change", (event) => {
-  const input = event.target;
-  if (!input || input.dataset.index === undefined) return;
-  const index = Number(input.dataset.index);
-  platformState[index].selected = input.checked;
-});
-
-addPlatformBtn.addEventListener("click", () => {
-  const value = customPlatformInput.value.trim();
-  if (!value) return;
-  const existingIndex = platformState.findIndex(
-    (p) => p.name.toLowerCase() === value.toLowerCase()
-  );
-  if (existingIndex >= 0) {
-    platformState[existingIndex].selected = true;
-  } else {
-    platformState.push({ name: value, selected: true });
-  }
-  customPlatformInput.value = "";
-  renderPlatforms();
-});
-
-verifyForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  verifyMessage.textContent = "Sending...";
-
-  const email = new FormData(verifyForm).get("email");
-  const platforms = platformState.filter((p) => p.selected).map((p) => p.name);
-  if (!platforms.length) {
-    verifyMessage.textContent = "Please select at least one platform.";
-    return;
-  }
-
-  try {
-    const res = await fetch("/api/verify/request", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: JSON.stringify({ email, platforms }),
-    });
-    if (res.status === 401) throw new Error("Please log in first.");
-    if (!res.ok) throw new Error("Failed to send. Please try again.");
-    verifyMessage.textContent = "Verification sent. Please check your inbox.";
-  } catch (err) {
-    verifyMessage.textContent = err.message;
-  }
-});
 
 const submitAuth = async (endpoint) => {
-  authMessage.textContent = "Processing...";
+  authMessage.textContent = "PROCESSING...";
   const formData = new FormData(authForm);
   const payload = Object.fromEntries(formData.entries());
   try {
@@ -184,17 +148,20 @@ const submitAuth = async (endpoint) => {
       body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Authentication failed");
+    if (!res.ok) throw new Error(data.error || "AUTH FAILED");
     if (data.token) {
       setToken(data.token);
-      authMessage.textContent = "Authenticated.";
-      updateMemberStatus();
+      authMessage.textContent = "AUTHENTICATED.";
+      updateAuthStatusFromToken();
       await fetchSubscriptions();
     } else if (data.message) {
-      authMessage.textContent = data.message;
+      authMessage.textContent = data.message.toUpperCase();
     }
   } catch (err) {
     authMessage.textContent = err.message;
+    if (endpoint === "login") {
+      setAuthStatus("FAILED TO LOG IN", true);
+    }
   }
 };
 
@@ -202,14 +169,14 @@ registerBtn.addEventListener("click", () => submitAuth("register"));
 loginBtn.addEventListener("click", () => submitAuth("login"));
 logoutBtn.addEventListener("click", () => {
   clearToken();
-  authMessage.textContent = "Logged out.";
-  updateMemberStatus();
+  authMessage.textContent = "LOGGED OUT.";
+  updateAuthStatusFromToken();
   fetchSubscriptions();
 });
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  formMessage.textContent = "Submitting...";
+  formMessage.textContent = "SUBMITTING...";
 
   const formData = new FormData(form);
   const payload = Object.fromEntries(formData.entries());
@@ -222,27 +189,25 @@ form.addEventListener("submit", async (event) => {
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(payload),
     });
-    if (res.status === 401) throw new Error("Please log in first.");
-    if (!res.ok) throw new Error("Create failed. Please try again.");
+    if (res.status === 401) throw new Error("PLEASE LOG IN FIRST.");
+    if (!res.ok) throw new Error("CREATE FAILED.");
     form.reset();
-    formMessage.textContent = "Subscription created.";
+    formMessage.textContent = "SUBSCRIPTION ADDED.";
     await fetchSubscriptions();
   } catch (err) {
     formMessage.textContent = err.message;
   }
 });
 
-renderPlatforms();
-fetchSubscriptions();
-updateMemberStatus();
-
 const urlParams = new URLSearchParams(window.location.search);
 const oauthToken = urlParams.get("token");
 if (oauthToken) {
   setToken(oauthToken);
-  authMessage.textContent = "Authenticated via Google.";
-  updateMemberStatus();
+  authMessage.textContent = "AUTHENTICATED VIA GOOGLE.";
+  updateAuthStatusFromToken();
   const cleanUrl = window.location.origin + window.location.pathname;
   window.history.replaceState({}, document.title, cleanUrl);
-  fetchSubscriptions();
 }
+
+updateAuthStatusFromToken();
+fetchSubscriptions();

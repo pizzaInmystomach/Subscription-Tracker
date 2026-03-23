@@ -17,146 +17,150 @@
     <div class="glow glow-1"></div>
     <div class="glow glow-2"></div>
 
-    <header class="hero">
-      <div class="hero-content glass">
-        <div class="badge">Subscription Tracker</div>
-        <h1>One-page Subscription Console</h1>
-        <p>
-          Track subscriptions with a futuristic glass UI, verify your email,<br />
-          and see upcoming charges at a glance.
-        </p>
-        <div class="hero-actions">
-          <a class="btn primary" href="#verify">Quick start</a>
-          <a class="btn ghost" href="#list">View list</a>
-        </div>
+    <nav class="topbar">
+      <div class="brand">SUBSCRIPTION TRACKER</div>
+      <div class="avatar" aria-label="User">
+        <span class="avatar-icon">👤</span>
       </div>
-      <div class="hero-metric glass">
-        <div class="metric-title">Live status</div>
-        <div class="metric-value" id="totalCount">0</div>
-        <div class="metric-sub">subscriptions tracked</div>
-      </div>
-    </header>
+    </nav>
 
-    <main class="container">
-      <section id="auth" class="glass section">
-        <div class="section-head">
-          <h2>Account</h2>
-          <p>Create an account or log in to manage your own subscriptions.</p>
-        </div>
-        <form id="authForm" class="grid">
-          <label class="field">
-            <span>Email</span>
-            <input type="email" name="email" placeholder="name@example.com" required />
-          </label>
-          <label class="field">
-            <span>Password</span>
-            <input type="password" name="password" placeholder="••••••••" required />
-          </label>
-          <div class="field actions">
-            <button class="btn primary" type="button" id="registerBtn">Register</button>
-            <button class="btn ghost" type="button" id="loginBtn">Login</button>
-            <button class="btn ghost" type="button" id="logoutBtn">Logout</button>
-            <a class="btn ghost" href="/oauth2/authorization/google">Continue with Google</a>
+    <div class="page-dots">
+      <a href="#page-1" class="dot"></a>
+      <a href="#page-2" class="dot"></a>
+      <a href="#page-3" class="dot"></a>
+    </div>
+
+    <main class="pages">
+      <section id="page-1" class="page">
+        <div class="bento">
+          <div class="tile hero-tile">
+            <div class="badge">SUBSCRIPTION TRACKER</div>
+            <h1>ONE PAGE. ALL SUBSCRIPTIONS.</h1>
+            <p>SCROLL BETWEEN PAGES TO SIGN IN AND TRACK YOUR TOOLS.</p>
           </div>
-        </form>
-        <div class="member-card">
-          <div class="member-title">Member Status</div>
-          <div id="memberStatus" class="member-status">Not signed in</div>
+          <div class="tile hero-metric">
+            <div class="metric-title">LIVE COUNT</div>
+            <div class="metric-value" id="totalCount">0</div>
+            <div class="metric-sub">SUBSCRIPTIONS TRACKED</div>
+          </div>
+          <div class="tile hero-note">
+            <div class="metric-title">STATUS</div>
+            <div class="metric-sub">SMOOTH SCROLL · BENTO LAYOUT · GLASS UI</div>
+          </div>
         </div>
-        <div id="authMessage" class="form-message" role="status"></div>
       </section>
 
-      <section id="verify" class="glass section">
-        <div class="section-head">
-          <h2>Quick Start</h2>
-          <p>Enter your email, pick popular platforms, and we will send a verification link.</p>
-        </div>
-        <form id="verifyForm" class="grid">
-          <label class="field">
-            <span>Email</span>
-            <input type="email" name="email" placeholder="name@example.com" required />
-          </label>
-          <div class="field full">
-            <span>Popular platforms</span>
-            <div id="platformList" class="platform-list"></div>
-          </div>
-          <label class="field">
-            <span>Add a custom platform</span>
-            <div class="inline">
-              <input type="text" id="customPlatform" placeholder="e.g., Notion" />
-              <button class="btn ghost" type="button" id="addPlatformBtn">Add</button>
+      <section id="page-2" class="page">
+        <div class="bento">
+          <div class="tile auth-tile">
+            <div class="section-head">
+              <h2>LOGIN</h2>
+              <p>USE YOUR EMAIL OR CONNECT WITH GOOGLE.</p>
             </div>
-          </label>
-          <div class="field actions">
-            <button class="btn primary" type="submit">Send verification</button>
+            <form id="authForm" class="grid">
+              <label class="field">
+                <span>EMAIL</span>
+                <input type="email" name="email" placeholder="name@example.com" required />
+              </label>
+              <label class="field">
+                <span>PASSWORD</span>
+                <input type="password" name="password" placeholder="••••••••" required />
+              </label>
+              <div class="field actions">
+                <button class="btn primary" type="button" id="registerBtn">REGISTER</button>
+                <button class="btn ghost" type="button" id="loginBtn">LOGIN</button>
+                <button class="btn ghost" type="button" id="logoutBtn">LOGOUT</button>
+                <a class="btn google" href="/oauth2/authorization/google">
+                  <span class="google-icon">G</span> CONTINUE WITH GOOGLE
+                </a>
+              </div>
+            </form>
+            <div id="authMessage" class="form-message" role="status"></div>
           </div>
-        </form>
-        <div id="verifyMessage" class="form-message" role="status"></div>
+          <div class="tile auth-status" id="authStatusTile">
+            <div class="metric-title">USER INFO</div>
+            <div id="authStatusText" class="metric-sub">NOT SIGNED IN</div>
+          </div>
+        </div>
       </section>
 
-      <section id="form" class="glass section">
-        <div class="section-head">
-          <h2>Advanced Setup</h2>
-          <p>If you already know billing details, add a full reminder directly.</p>
-        </div>
-        <form id="subscriptionForm" class="grid">
-          <label class="field">
-            <span>Email</span>
-            <input type="email" name="email" placeholder="name@example.com" required />
-          </label>
-          <label class="field">
-            <span>Subscription name</span>
-            <input type="text" name="name" placeholder="Netflix / Spotify" required />
-          </label>
-          <label class="field">
-            <span>Price</span>
-            <input type="number" name="price" min="0" step="0.01" placeholder="299" required />
-          </label>
-          <label class="field">
-            <span>Currency</span>
-            <select name="currency" required>
-              <option value="TWD">TWD</option>
-              <option value="USD">USD</option>
-              <option value="JPY">JPY</option>
-              <option value="EUR">EUR</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>Next billing date</span>
-            <input type="date" name="nextBillingDate" required />
-          </label>
-          <label class="field">
-            <span>Period</span>
-            <select name="period" required>
-              <option value="MONTHLY">Monthly</option>
-              <option value="YEARLY">Yearly</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>Reminder days before</span>
-            <input type="number" name="noticeDays" min="0" max="60" placeholder="7" required />
-          </label>
-          <div class="field actions">
-            <button class="btn primary" type="submit">Create subscription</button>
-            <button class="btn ghost" type="reset">Clear</button>
+      <section id="page-3" class="page">
+        <div class="bento bento-wide">
+          <div class="tile stats-tile">
+            <div class="metric-title">ACTIVE TOOLS</div>
+            <div class="flip-number" id="toolCount">0</div>
+            <div class="metric-title">AVG MONTHLY COST</div>
+            <div class="flip-number" id="avgMonthly">$0</div>
           </div>
-        </form>
-        <div id="formMessage" class="form-message" role="status"></div>
-      </section>
-
-      <section id="list" class="glass section">
-        <div class="section-head">
-          <h2>Tracked subscriptions</h2>
-          <p>Synced live from the backend database.</p>
+          <div class="tile form-tile">
+            <div class="section-head">
+              <h2>ADD SUBSCRIPTION</h2>
+              <p>SELECT A TOOL OR TYPE YOUR OWN.</p>
+            </div>
+            <form id="subscriptionForm" class="grid">
+              <label class="field">
+                <span>SUBSCRIPTION NAME</span>
+                <input type="text" name="name" list="subscriptionOptions" placeholder="NETFLIX" required />
+                <datalist id="subscriptionOptions">
+                  <option value="NETFLIX"></option>
+                  <option value="SPOTIFY"></option>
+                  <option value="YOUTUBE PREMIUM"></option>
+                  <option value="APPLE MUSIC"></option>
+                  <option value="DISNEY+"></option>
+                  <option value="HBO MAX"></option>
+                  <option value="AMAZON PRIME"></option>
+                  <option value="NOTION"></option>
+                  <option value="CHATGPT PLUS"></option>
+                  <option value="ADOBE CREATIVE CLOUD"></option>
+                </datalist>
+              </label>
+              <label class="field">
+                <span>PRICE</span>
+                <input type="number" name="price" min="0" step="0.01" placeholder="299" required />
+              </label>
+              <label class="field">
+                <span>CURRENCY</span>
+                <select name="currency" required>
+                  <option value="TWD">TWD</option>
+                  <option value="USD">USD</option>
+                  <option value="JPY">JPY</option>
+                  <option value="EUR">EUR</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>START DATE</span>
+                <input type="date" name="nextBillingDate" required />
+              </label>
+              <label class="field">
+                <span>PERIOD</span>
+                <select name="period" required>
+                  <option value="MONTHLY">ONE MONTH</option>
+                  <option value="QUARTERLY">ONE QUARTER</option>
+                  <option value="BIANNUAL">HALF YEAR</option>
+                  <option value="YEARLY">ONE YEAR</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>REMINDER DAYS BEFORE</span>
+                <input type="number" name="noticeDays" min="0" max="60" placeholder="7" required />
+              </label>
+              <div class="field actions">
+                <button class="btn primary" type="submit">ADD SUBSCRIPTION</button>
+                <button class="btn ghost" type="reset">CLEAR</button>
+              </div>
+            </form>
+            <div id="formMessage" class="form-message" role="status"></div>
+          </div>
+          <div class="tile list-tile">
+            <div class="section-head">
+              <h2>TRACKED SUBSCRIPTIONS</h2>
+              <p>LIVE DATA FROM YOUR ACCOUNT.</p>
+            </div>
+            <div id="subscriptions" class="card-grid"></div>
+          </div>
         </div>
-        <div id="subscriptions" class="card-grid"></div>
       </section>
     </main>
-
-    <footer class="footer">
-      <span>Built with Spring Boot · Glass UI</span>
-    </footer>
-
     <script src="/app.js"></script>
   </body>
 </html>
