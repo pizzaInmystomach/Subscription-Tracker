@@ -14,15 +14,14 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmailVerification {
+public class AuthEmailVerificationToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String email;
+    private Long userId;
     private String token;
-    private String platformsCsv;
     private LocalDateTime createdAt;
     private LocalDateTime verifiedAt;
-    private Long userId;
+    private LocalDateTime expiresAt;
 }

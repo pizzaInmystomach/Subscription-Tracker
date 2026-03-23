@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,11 +13,14 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GmailAccount {
+@IdClass(MailMessageLogKey.class)
+public class MailMessageLog {
     @Id
     private String email;
 
-    private String principalName;
-    private LocalDateTime connectedAt;
-    private LocalDateTime lastScanAt;
+    @Id
+    private String messageId;
+
+    private LocalDateTime processedAt;
+    private String statusDetected;
 }

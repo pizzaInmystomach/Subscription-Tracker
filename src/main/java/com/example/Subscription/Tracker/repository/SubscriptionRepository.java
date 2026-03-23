@@ -14,4 +14,6 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
   boolean existsByEmailIgnoreCaseAndNameIgnoreCase(String email, String name);
 
   List<Subscription> findByEmailIgnoreCase(String email);
+
+  List<Subscription> findByUserId(Long userId);
 }

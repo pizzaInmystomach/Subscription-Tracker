@@ -101,17 +101,27 @@ docker-compose up --build -d
 ### System Architecture
 ```mermaid
 graph TD
-    User((User/Client)) -- REST API --> Controller[Spring Boot Controller]
-    subgraph "Application Logic"
-        Controller --> Service[Subscription Service]
-        Service --> DB[(PostgreSQL)]
-        Scheduler[Spring Scheduler] -- Trigger Daily --> Service
+    subgraph "Client Side"
+        UserA[User A]
+        UserB[User B]
     end
-    subgraph "Async Notifications"
-        Service -- Async Call --> Email[Email Service]
-        Email -- SMTP --> Mailtrap[Mailtrap / SMTP Server]
+
+    subgraph "Render Cloud (Backend)"
+        API[Spring Boot REST API]
+        Auth[JWT / Security]
+        DB[(PostgreSQL)]
+        Task[Spring Scheduler]
     end
-    Mailtrap --> User
+
+    UserA -- "Login / Add Sub" --> Auth
+    Auth --> API
+    API <--> DB
+    
+    Task -- "Daily Scan" --> DB
+    Task -- "Send Reminders" --> Mail[Email Service]
+    
+    Mail -- "To: User A's Email" --> UserA
+    Mail -- "To: User B's Email" --> UserB
 ```
 
 ### Workflow: Automatic Reminder

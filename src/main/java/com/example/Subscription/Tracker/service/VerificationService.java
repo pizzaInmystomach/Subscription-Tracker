@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.Subscription.Tracker.model.AppUser;
 import com.example.Subscription.Tracker.model.EmailVerification;
 import com.example.Subscription.Tracker.model.Subscription;
 import com.example.Subscription.Tracker.repository.EmailVerificationRepository;
@@ -24,7 +25,7 @@ public class VerificationService {
     private SubscriptionRepository subscriptionRepository;
 
     // Create a new verification request and return the entity (including token)
-    public EmailVerification requestVerification(String email, List<String> platforms) {
+    public EmailVerification requestVerification(AppUser user, String email, List<String> platforms) {
         String token = UUID.randomUUID().toString();
         EmailVerification verification = new EmailVerification();
         verification.setEmail(normalizeEmail(email));
@@ -32,6 +33,7 @@ public class VerificationService {
         verification.setPlatformsCsv(String.join(",", normalizePlatforms(platforms)));
         verification.setCreatedAt(LocalDateTime.now());
         verification.setVerifiedAt(null);
+        verification.setUserId(user.getId());
 
         return verificationRepository.save(verification);
     }
@@ -60,6 +62,11 @@ public class VerificationService {
             Subscription sub = new Subscription();
             sub.setName(name);
             sub.setEmail(verification.getEmail());
+            if (verification.getUserId() != null) {
+                AppUser user = new AppUser();
+                user.setId(verification.getUserId());
+                sub.setUser(user);
+            }
             sub.setStatus("PENDING_DETAILS");
             sub.setLastStatusNote("Awaiting billing details.");
             sub.setLastStatusAt(LocalDateTime.now().toLocalDate());

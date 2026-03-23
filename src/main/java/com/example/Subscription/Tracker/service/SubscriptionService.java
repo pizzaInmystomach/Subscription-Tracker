@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 
+import com.example.Subscription.Tracker.model.AppUser;
 import com.example.Subscription.Tracker.model.Subscription;
 import com.example.Subscription.Tracker.repository.SubscriptionRepository;
 
@@ -15,8 +16,13 @@ public class SubscriptionService {
     @Autowired
     private SubscriptionRepository repository;
 
-    public List<Subscription> getAll() { return repository.findAll(); }
-    public Subscription create(Subscription sub) {
+    public List<Subscription> getAllByUser(AppUser user) {
+        return repository.findByUserId(user.getId());
+    }
+
+    public Subscription createForUser(AppUser user, Subscription sub) {
+        sub.setUser(user);
+        sub.setEmail(user.getEmail());
         if (sub.getStatus() == null || sub.getStatus().isBlank()) {
             sub.setStatus("ACTIVE");
         }

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GmailMessageLogKey implements Serializable {
+public class MailMessageLogKey implements Serializable {
     private String email;
     private String messageId;
 }

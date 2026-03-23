@@ -2,11 +2,52 @@ const form = document.querySelector("#subscriptionForm");
 const formMessage = document.querySelector("#formMessage");
 const verifyForm = document.querySelector("#verifyForm");
 const verifyMessage = document.querySelector("#verifyMessage");
+const authForm = document.querySelector("#authForm");
+const authMessage = document.querySelector("#authMessage");
+const memberStatus = document.querySelector("#memberStatus");
+const registerBtn = document.querySelector("#registerBtn");
+const loginBtn = document.querySelector("#loginBtn");
+const logoutBtn = document.querySelector("#logoutBtn");
 const platformListEl = document.querySelector("#platformList");
 const customPlatformInput = document.querySelector("#customPlatform");
 const addPlatformBtn = document.querySelector("#addPlatformBtn");
 const list = document.querySelector("#subscriptions");
 const totalCount = document.querySelector("#totalCount");
+
+const TOKEN_KEY = "subtracker_token";
+
+const getToken = () => localStorage.getItem(TOKEN_KEY);
+const setToken = (token) => localStorage.setItem(TOKEN_KEY, token);
+const clearToken = () => localStorage.removeItem(TOKEN_KEY);
+
+const authHeaders = () => {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+const decodeJwt = (token) => {
+  try {
+    const payload = token.split(".")[1];
+    const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    return JSON.parse(decoded);
+  } catch {
+    return null;
+  }
+};
+
+const updateMemberStatus = () => {
+  const token = getToken();
+  if (!token) {
+    memberStatus.textContent = "Not signed in";
+    return;
+  }
+  const payload = decodeJwt(token);
+  if (!payload || !payload.sub) {
+    memberStatus.textContent = "Signed in";
+    return;
+  }
+  memberStatus.textContent = `Signed in as ${payload.sub}`;
+};
 
 const defaultPlatforms = [
   "Netflix",
@@ -57,7 +98,13 @@ const renderList = (items) => {
 
 const fetchSubscriptions = async () => {
   try {
-    const res = await fetch("/api/subscriptions");
+    const res = await fetch("/api/subscriptions", {
+      headers: { ...authHeaders() },
+    });
+    if (res.status === 401) {
+      list.innerHTML = `<div class="card"><h3>Authentication required</h3><p>Please log in to view your subscriptions.</p></div>`;
+      return;
+    }
     if (!res.ok) throw new Error("Unable to load subscriptions");
     const data = await res.json();
     renderList(data);
@@ -115,14 +162,49 @@ verifyForm.addEventListener("submit", async (event) => {
   try {
     const res = await fetch("/api/verify/request", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify({ email, platforms }),
     });
+    if (res.status === 401) throw new Error("Please log in first.");
     if (!res.ok) throw new Error("Failed to send. Please try again.");
     verifyMessage.textContent = "Verification sent. Please check your inbox.";
   } catch (err) {
     verifyMessage.textContent = err.message;
   }
+});
+
+const submitAuth = async (endpoint) => {
+  authMessage.textContent = "Processing...";
+  const formData = new FormData(authForm);
+  const payload = Object.fromEntries(formData.entries());
+  try {
+    const res = await fetch(`/api/auth/${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Authentication failed");
+    if (data.token) {
+      setToken(data.token);
+      authMessage.textContent = "Authenticated.";
+      updateMemberStatus();
+      await fetchSubscriptions();
+    } else if (data.message) {
+      authMessage.textContent = data.message;
+    }
+  } catch (err) {
+    authMessage.textContent = err.message;
+  }
+};
+
+registerBtn.addEventListener("click", () => submitAuth("register"));
+loginBtn.addEventListener("click", () => submitAuth("login"));
+logoutBtn.addEventListener("click", () => {
+  clearToken();
+  authMessage.textContent = "Logged out.";
+  updateMemberStatus();
+  fetchSubscriptions();
 });
 
 form.addEventListener("submit", async (event) => {
@@ -137,9 +219,10 @@ form.addEventListener("submit", async (event) => {
   try {
     const res = await fetch("/api/subscriptions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(payload),
     });
+    if (res.status === 401) throw new Error("Please log in first.");
     if (!res.ok) throw new Error("Create failed. Please try again.");
     form.reset();
     formMessage.textContent = "Subscription created.";
@@ -151,8 +234,15 @@ form.addEventListener("submit", async (event) => {
 
 renderPlatforms();
 fetchSubscriptions();
+updateMemberStatus();
 
-const params = new URLSearchParams(window.location.search);
-if (params.get("gmail") === "connected") {
-  verifyMessage.textContent = "Gmail connected successfully.";
+const urlParams = new URLSearchParams(window.location.search);
+const oauthToken = urlParams.get("token");
+if (oauthToken) {
+  setToken(oauthToken);
+  authMessage.textContent = "Authenticated via Google.";
+  updateMemberStatus();
+  const cleanUrl = window.location.origin + window.location.pathname;
+  window.history.replaceState({}, document.title, cleanUrl);
+  fetchSubscriptions();
 }

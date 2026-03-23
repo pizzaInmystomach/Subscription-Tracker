@@ -73,4 +73,18 @@ public class EmailService {
         ));
         mailSender.send(message);
     }
+
+    @Async
+    public void sendAuthVerificationEmail(String to, String token) {
+        String verifyLink = baseUrl + "/verify-auth.html?token=" + token;
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(mailFrom);
+        message.setTo(to);
+        message.setSubject("Verify your account");
+        message.setText(String.format(
+            "Please verify your account by clicking the link below:\n%s",
+            verifyLink
+        ));
+        mailSender.send(message);
+    }
 }

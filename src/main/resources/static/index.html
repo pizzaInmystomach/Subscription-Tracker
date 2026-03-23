@@ -38,11 +38,38 @@
     </header>
 
     <main class="container">
+      <section id="auth" class="glass section">
+        <div class="section-head">
+          <h2>Account</h2>
+          <p>Create an account or log in to manage your own subscriptions.</p>
+        </div>
+        <form id="authForm" class="grid">
+          <label class="field">
+            <span>Email</span>
+            <input type="email" name="email" placeholder="name@example.com" required />
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <input type="password" name="password" placeholder="••••••••" required />
+          </label>
+          <div class="field actions">
+            <button class="btn primary" type="button" id="registerBtn">Register</button>
+            <button class="btn ghost" type="button" id="loginBtn">Login</button>
+            <button class="btn ghost" type="button" id="logoutBtn">Logout</button>
+            <a class="btn ghost" href="/oauth2/authorization/google">Continue with Google</a>
+          </div>
+        </form>
+        <div class="member-card">
+          <div class="member-title">Member Status</div>
+          <div id="memberStatus" class="member-status">Not signed in</div>
+        </div>
+        <div id="authMessage" class="form-message" role="status"></div>
+      </section>
+
       <section id="verify" class="glass section">
         <div class="section-head">
           <h2>Quick Start</h2>
           <p>Enter your email, pick popular platforms, and we will send a verification link.</p>
-          <p class="muted">Connect Gmail to enable the daily 9:00 AM scan for cancellations or failed renewals.</p>
         </div>
         <form id="verifyForm" class="grid">
           <label class="field">
@@ -62,7 +89,6 @@
           </label>
           <div class="field actions">
             <button class="btn primary" type="submit">Send verification</button>
-            <a class="btn ghost" href="/oauth2/authorization/google">Connect Gmail</a>
           </div>
         </form>
         <div id="verifyMessage" class="form-message" role="status"></div>
