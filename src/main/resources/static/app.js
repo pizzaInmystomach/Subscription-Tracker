@@ -11,6 +11,7 @@ const list = document.querySelector("#subscriptions");
 const totalCount = document.querySelector("#totalCount");
 const toolCount = document.querySelector("#toolCount");
 const avgMonthly = document.querySelector("#avgMonthly");
+const dots = document.querySelectorAll(".dot");
 
 const TOKEN_KEY = "subtracker_token";
 
@@ -51,6 +52,34 @@ const updateAuthStatusFromToken = () => {
   } else {
     setAuthStatus("SIGNED IN");
   }
+};
+
+const setupDotObserver = () => {
+  const sections = document.querySelectorAll(".page");
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const id = entry.target.getAttribute("id");
+        dots.forEach((dot) => {
+          dot.classList.toggle("active", dot.dataset.page === id);
+        });
+      });
+    },
+    { threshold: 0.6 }
+  );
+  sections.forEach((section) => observer.observe(section));
+};
+
+const setupGsapSnap = () => {
+  if (!window.gsap || !window.ScrollTrigger) return;
+  window.gsap.registerPlugin(window.ScrollTrigger);
+  window.ScrollTrigger.create({
+    trigger: document.body,
+    start: "top top",
+    end: "bottom bottom",
+    snap: 1 / 2,
+  });
 };
 
 const formatDate = (value) => {
@@ -211,3 +240,5 @@ if (oauthToken) {
 
 updateAuthStatusFromToken();
 fetchSubscriptions();
+setupDotObserver();
+setupGsapSnap();

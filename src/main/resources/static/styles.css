@@ -87,6 +87,13 @@ h1, h2 {
   letter-spacing: 0.2em;
 }
 
+.topbar-inner {
+  width: 70%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .brand {
   font-weight: 600;
 }
@@ -131,6 +138,12 @@ h1, h2 {
   background: var(--accent);
 }
 
+.dot.active {
+  background: var(--accent);
+  transform: scale(1.25);
+  box-shadow: 0 0 12px rgba(88, 226, 255, 0.7);
+}
+
 .pages {
   position: relative;
   z-index: 1;
@@ -140,6 +153,108 @@ h1, h2 {
   min-height: 100vh;
   scroll-snap-align: start;
   padding: 120px 64px 64px;
+  position: relative;
+}
+
+.page#page-1::before {
+  content: "NETFLIX  SPOTIFY  YOUTUBE  NOTION  ADOBE  APPLE MUSIC  DISNEY+  HBO  PRIME  CHATGPT";
+  position: absolute;
+  inset: 80px 40px 40px;
+  border-radius: 40px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.12);
+  font-size: 32px;
+  line-height: 1.6;
+  letter-spacing: 0.4em;
+  text-align: center;
+  display: grid;
+  place-items: center;
+  z-index: 0;
+  padding: 40px;
+}
+
+.page#page-1::after {
+  content: "SPOTIFY  NOTION  ADOBE  NETFLIX  DISNEY+  PRIME  APPLE  YOUTUBE  HBO";
+  position: absolute;
+  inset: 140px 80px 80px;
+  border-radius: 40px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.08);
+  font-size: 24px;
+  line-height: 1.8;
+  letter-spacing: 0.35em;
+  text-align: center;
+  display: grid;
+  place-items: center;
+  z-index: 0;
+  padding: 40px;
+}
+
+.hero-quote,
+.hero-benefits {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-quote {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.quote-block {
+  padding: 32px;
+  border-radius: 24px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+}
+
+.quote {
+  font-size: clamp(20px, 2.4vw, 32px);
+  line-height: 1.5;
+  letter-spacing: 0.2em;
+}
+
+.quote-title {
+  margin-top: 18px;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.3em;
+}
+
+.hero-title {
+  font-size: clamp(28px, 3vw, 40px);
+  letter-spacing: 0.5em;
+  margin-top: 24px;
+}
+
+.hero-benefits {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.benefit-card {
+  padding: 24px;
+  border-radius: 20px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
+}
+
+.benefit-card p {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.18em;
 }
 
 .bento {
@@ -355,6 +470,19 @@ h1, h2 {
 @media (max-width: 960px) {
   .page {
     padding: 120px 24px 48px;
+  }
+
+  .topbar-inner {
+    width: 100%;
+  }
+
+  .hero-benefits {
+    grid-template-columns: 1fr;
+  }
+
+  .page#page-1::before,
+  .page#page-1::after {
+    inset: 100px 20px 40px;
   }
 
   .bento,

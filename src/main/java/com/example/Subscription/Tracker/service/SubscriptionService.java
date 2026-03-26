@@ -31,4 +31,40 @@ public class SubscriptionService {
         }
         return repository.save(sub);
     }
+
+    public Subscription updateForUser(AppUser user, Long id, Subscription incoming) {
+        Subscription existing = repository.findById(id)
+            .orElseThrow(() -> new IllegalStateException("Subscription not found"));
+        if (!existing.getUser().getId().equals(user.getId())) {
+            throw new IllegalStateException("Subscription not found");
+        }
+
+        if (incoming.getName() != null) existing.setName(incoming.getName());
+        if (incoming.getPrice() != null) existing.setPrice(incoming.getPrice());
+        if (incoming.getCurrency() != null) existing.setCurrency(incoming.getCurrency());
+        if (incoming.getNextBillingDate() != null) existing.setNextBillingDate(incoming.getNextBillingDate());
+        if (incoming.getPeriod() != null) existing.setPeriod(incoming.getPeriod());
+        if (incoming.getNoticeDays() != null) existing.setNoticeDays(incoming.getNoticeDays());
+        if (incoming.getStatus() != null) existing.setStatus(incoming.getStatus());
+        if (incoming.getLastStatusNote() != null) existing.setLastStatusNote(incoming.getLastStatusNote());
+        if (incoming.getLastStatusAt() != null) existing.setLastStatusAt(incoming.getLastStatusAt());
+
+        existing.setEmail(user.getEmail());
+        if (existing.getStatus() == null || existing.getStatus().isBlank()) {
+            existing.setStatus("ACTIVE");
+        }
+        if (existing.getLastStatusAt() == null) {
+            existing.setLastStatusAt(LocalDate.now());
+        }
+        return repository.save(existing);
+    }
+
+    public void deleteForUser(AppUser user, Long id) {
+        Subscription existing = repository.findById(id)
+            .orElseThrow(() -> new IllegalStateException("Subscription not found"));
+        if (!existing.getUser().getId().equals(user.getId())) {
+            throw new IllegalStateException("Subscription not found");
+        }
+        repository.delete(existing);
+    }
 }
