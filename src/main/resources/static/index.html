@@ -209,7 +209,23 @@ const { useState, useEffect, useRef, useCallback } = React;
 /* ══════════════════════════════════════════════
    MOCK DATA
 ══════════════════════════════════════════════ */
-const SERVICES = ["Netflix","Spotify","YouTube Premium","Adobe Creative Cloud","Apple iCloud","Microsoft 365","Disney+","Amazon Prime","Notion","Figma","Linear","GitHub","Slack","Dropbox","ChatGPT Plus","NordVPN","1Password","Duolingo Plus","Nintendo Switch Online","PlayStation Plus"];
+const SERVICES = ["Netflix","Spotify","YouTube Premium","Adobe Creative Cloud","Apple iCloud","Microsoft 365","Disney+","Amazon Prime","HBO Max","Notion","Figma","Linear","GitHub","Slack","Dropbox","ChatGPT Plus","NordVPN","1Password","Duolingo Plus","Nintendo Switch Online","PlayStation Plus"];
+const SERVICE_ICON_SLUGS = {
+  "Netflix": "netflix",
+  "Spotify": "spotify",
+  "YouTube Premium": "youtube",
+  "Apple iCloud": "icloud",
+  "Notion": "notion",
+  "Figma": "figma",
+  "Linear": "linear",
+  "GitHub": "github",
+  "Dropbox": "dropbox",
+  "NordVPN": "nordvpn",
+  "1Password": "1password",
+  "Duolingo Plus": "duolingo",
+  "PlayStation Plus": "playstation",
+  "HBO Max": "hbomax",
+};
 const SERVICE_COLORS = {
   "Netflix":["#E50914","#141414"],"Spotify":["#1DB954","#191414"],"YouTube Premium":["#FF0000","#282828"],
   "Adobe Creative Cloud":["#FF0000","#2C2C2C"],"Apple iCloud":["#007AFF","#F5F5F7"],"Microsoft 365":["#D83B01","#0078D4"],
@@ -313,19 +329,34 @@ function Toast({ message, type, onClose }) {
    SERVICE LOGO
 ══════════════════════════════════════════════ */
 function ServiceLogo({ name, size=44 }) {
+  const [failed, setFailed] = useState(false);
   const [c1, c2] = getServiceColors(name);
+  const slug = SERVICE_ICON_SLUGS[name];
+  const useIcon = slug && !failed;
   return (
     <div style={{
       width: size, height: size, borderRadius: size*0.33,
-      background: `linear-gradient(135deg, ${c1}, ${c2})`,
+      background: useIcon ? "#FFFFFF" : `linear-gradient(135deg, ${c1}, ${c2})`,
       display:"flex", alignItems:"center", justifyContent:"center",
       fontFamily:"'DM Mono', monospace",
       fontWeight: 500, fontSize: size*0.42, color:"#fff",
       letterSpacing: "-0.03em",
-      boxShadow: `0 2px 8px ${c1}55`,
+      boxShadow: useIcon ? "0 4px 12px rgba(0,0,0,0.18)" : `0 2px 8px ${c1}55`,
+      border: useIcon ? "1px solid rgba(0,0,0,0.08)" : "none",
       flexShrink: 0,
     }}>
-      {getInitials(name)}
+      {useIcon ? (
+        <img
+          src={`https://cdn.simpleicons.org/${slug}?viewbox=auto`}
+          alt={name}
+          width={Math.round(size * 0.58)}
+          height={Math.round(size * 0.58)}
+          loading="lazy"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        getInitials(name)
+      )}
     </div>
   );
 }
@@ -620,6 +651,11 @@ function SubModal({ initial, onClose, onSave }) {
         borderRadius:"var(--radius-xl)", boxShadow:"var(--shadow-xl)",
         padding:"32px 28px", width:"100%", maxWidth:440,
         border:"1px solid rgba(255,255,255,0.8)",
+        color:"#111827",
+        "--slate":"#111827",
+        "--cool":"#6B7280",
+        "--bg":"#F8FAFC",
+        "--white":"#FFFFFF",
       }}>
         {/* Header */}
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
@@ -1252,7 +1288,7 @@ function ErrorPage({ title, message, onRetry, onBack }) {
 /* ══════════════════════════════════════════════
    DASHBOARD
 ══════════════════════════════════════════════ */
-function Dashboard({ onLogout, userName, onAuthLost, onFatal }) {
+function Dashboard({ onLogout, userName, onAuthLost, onFatal, onGoLanding }) {
   const [subs, setSubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null); // null | "add" | sub object
@@ -1370,7 +1406,7 @@ function Dashboard({ onLogout, userName, onAuthLost, onFatal }) {
         WebkitBackdropFilter:"blur(12px)",
       }}>
         <div style={{ maxWidth:900, margin:"0 auto", padding:"0 24px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <button onClick={onGoLanding} style={{ display:"flex", alignItems:"center", gap:10, background:"transparent", border:"none", cursor:"pointer", padding:0 }}>
             <div style={{
               width:32, height:32, background:"linear-gradient(135deg,var(--indigo),#8B5CF6)",
               borderRadius:9, display:"flex", alignItems:"center", justifyContent:"center",
@@ -1381,7 +1417,7 @@ function Dashboard({ onLogout, userName, onAuthLost, onFatal }) {
             <span style={{ fontSize:18, fontWeight:800, color:"#fff", letterSpacing:"-0.02em" }}>
               Subscription Tracker
             </span>
-          </div>
+          </button>
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
             <button className="btn-primary" onClick={() => setModal("add")} style={{
               background:"linear-gradient(135deg,#6366F1,#8B5CF6)", color:"#fff", border:"none",
@@ -1464,6 +1500,10 @@ function App() {
     setAuthNotice({ type:"error", message:"Your session expired. Please sign in again.", action:() => setAuthNotice(null) });
   };
 
+  const handleGoLanding = () => {
+    setPage("login");
+  };
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
@@ -1495,7 +1535,7 @@ function App() {
 
   return page === "login"
     ? <LoginPage onLogin={handleLogin} notice={authNotice} />
-    : <Dashboard onLogout={handleLogout} userName={userName} onAuthLost={handleAuthLost} onFatal={(title, message) => setAppError({ title, message })} />;
+    : <Dashboard onLogout={handleLogout} userName={userName} onAuthLost={handleAuthLost} onFatal={(title, message) => setAppError({ title, message })} onGoLanding={handleGoLanding} />;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
