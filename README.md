@@ -43,52 +43,100 @@ The system follows a **Layered Architecture** to ensure high maintainability and
 
 ---
 
+## 🌟 Backend Features & Logic
+
+### 1. Secure Authentication Flow
+The system implements a hybrid authentication model. It handles Google OAuth2 callbacks via a custom `OAuth2LoginSuccessHandler`, which validates the user in the PostgreSQL database and issues a signed JWT for subsequent stateless requests.
+
+### 2. Multi-Tenant Data Isolation
+Data integrity is maintained through a **One-to-Many** relationship between `User` and `Subscription` entities. Every API request is intercepted by a JWT Filter that injects the user context, ensuring that users can only CRUD data belonging to their own `uid`.
+
+### 3. Automated Reminder Engine
+A dedicated `@Scheduled` service scans the database daily to identify subscriptions approaching their `next_billing_date`. It triggers the `JavaMailSender` to dispatch notification emails to the specific user's registered address.
+
+### 4. Resilient Database Integration
+Configured to handle cloud-native database connections, including specific handling for reverse-proxy headers (`X-Forwarded-Proto`) and optimized HikariCP connection pooling.
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
 * Docker & Docker Compose
-* Java 21 (for local development)
-* Maven
+* Java 21 or higher.
+* Maven 3.9+.
+* Google Cloud Project: An active OAuth 2.0 Client ID and Secret.
 
-### 1. Configuration
-Create a `.env` file in the root directory and provide your SMTP credentials (recommended to use [Mailtrap](https://mailtrap.io/)):
+### 1. Local Setup
+#### 1. Clone the repository:
 ```bash
-MAILTRAP_USERNAME=your_14_digit_id
-MAILTRAP_PASSWORD=your_password
+git clone https://github.com/pizzaInmystomach/Subscription-Tracker.git
+cd Subscription-Tracker
 ```
 
-### 2. Build the Application
-* Compile the source code and package it into a JAR file:
-```bash
-./mvnw clean package -DskipTests
+#### 2. Environment Configuration
+Create a `.env` file in the root directory (this file is ignored by Git for security):
+```env
+# Database
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/subtracker
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=your_password
+
+# Security
+JWT_SECRET=your_32_character_random_string
+GOOGLE_CLIENT_ID=your_google_id
+GOOGLE_CLIENT_SECRET=your_google_secret
+
+# Notifications
+MAIL_USERNAME=your_gmail@gmail.com
+MAIL_PASSWORD=your_gmail_app_password
 ```
 
-### 3. Launch with Docker
-* Spin up both the application and the database containers:
-```bash
-docker-compose up --build -d
-```
-* The API will be accessible at http://localhost:8080.
+### 2. Execution Paths
+* **Standard Maven Run** (Faster for UI/Logic changes):
+  ```bash
+  mvn spring-boot:run
+  ```
+* **Docker Compose** (Tests the full production-like environment):
+  ```bash
+  docker-compose up --build
+  ```
 
 ---
 
-## 🔌 API Documentation (Sample)
-|Method|Endpoint|Description|
-|---|---|---|
-|`GET`|`/api/subscriptions`|Retrieve all active subscriptions|
-|`POST `|`/api/subscriptions`|Create a new subscription entry|
+## Deployment & Environment
+The system is designed for **Cloud-Native Deployment**, utilizing a multi-stage Docker build to ensure a lightweight and secure production image.
 
-### Sample Request Body:
-```json
-{
-  "name": "Netflix",
-  "price": 390.0,
-  "currency": "TWD",
-  "nextBillingDate": "2026-04-15",
-  "period": "MONTHLY",
-  "noticeDays": 3
-}
-```
+### 🐳 Multi-Stage Dockerfile
+The `Dockerfile` is optimized to separate the build environment from the runtime environment:
+* **Build Stage**: Uses maven:3.9.6-eclipse-temurin-21 to compile the source code and run mvn package.
+* **Runtime Stage**: Uses eclipse-temurin:21-jdk-alpine to execute the resulting app.jar, significantly reducing the attack surface and image size.
+
+### ⚙️ Production Environment Variables (Render/Heroku)
+When deploying to platforms like **Render**, configure the following variables in the dashboard:
+
+|Category|Key|Value/ Example|
+|---|---|---|
+|Database|`SPRING_DATASOURCE_URL`|`jdbc:postgresql://<host>:5432/<db_name>`|
+|Auth|`JWT_SECRET`|High-entropy random string|
+|OAuth2|`GOOGLE_CLIENT_ID`|From Google Cloud Console|
+|Proxy|`SERVER_FORWARD_HEADERS_STRATEGY`|`framework`(Required for HTTPS over Proxy)|
+|Mail|`MAIL_PASSWORD`|16-digit Google App Password|
+
+### 🛠️ Reverse Proxy Configuration
+Since the backend operates behind a Load Balancer on Render, the application is configured to respect `X-Forwarded-Proto` headers. This prevents `redirect_uri_mismatch` errors during Google OAuth2 authentication by ensuring the backend generates `https` links instead of `http`.
+
+---
+
+## 🔌 API Endpoints (RESTful)
+|Method|Endpoint|Description|Auth|
+|---|---|---|---|
+|`GET`|`/api/subscriptions`|Retrieve all active subscriptions|Public|
+|`POST `|`/api/subscriptions`|Create a new subscription entry|JWT|
+|`POST `|`/auth/login`|Google OAuth2 Entry Point|JWT|
+|`PUT`|`/api/subscriptions/{id}`|Update existing subscription|JWT|
+|`DELETE`|`/api/subscriptions/{id}`|Remove a subscription|JWT|
+
 ---
 
 ## 💡 Engineering Highlights
@@ -101,27 +149,16 @@ docker-compose up --build -d
 ### System Architecture
 ```mermaid
 graph TD
-    subgraph "Client Side"
-        UserA[User A]
-        UserB[User B]
-    end
+    User((Client)) -- "Bearer Token" --> Filter[JWT Auth Filter]
+    Filter -- "Context" --> Controller[Subscription Controller]
+    Controller --> Service[Subscription Service]
+    Service <--> Repo[JPA Repository]
+    Repo <--> DB[(PostgreSQL)]
 
-    subgraph "Render Cloud (Backend)"
-        API[Spring Boot REST API]
-        Auth[JWT / Security]
-        DB[(PostgreSQL)]
-        Task[Spring Scheduler]
+    subgraph "Automation Layer"
+        Cron[Spring Scheduler] --> Service
+        Service --> Mail[JavaMail Service]
     end
-
-    UserA -- "Login / Add Sub" --> Auth
-    Auth --> API
-    API <--> DB
-    
-    Task -- "Daily Scan" --> DB
-    Task -- "Send Reminders" --> Mail[Email Service]
-    
-    Mail -- "To: User A's Email" --> UserA
-    Mail -- "To: User B's Email" --> UserB
 ```
 
 ### Workflow: Automatic Reminder
